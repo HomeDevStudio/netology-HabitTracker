@@ -1,30 +1,93 @@
 package ru.netology.habittracker.feature.list
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Done
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.SwipeToDismissBox
+import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import ru.netology.habittracker.ui.theme.HabitTrackerTheme
+import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import java.time.LocalDate
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun HabitCardWithSwipe(
+    listItem: HabitListItem,
+    viewModel: HabitListViewModel,
+    onDelete: (Long) -> Unit
+) {
+    val dismissState = rememberSwipeToDismissBoxState()
+
+    if (dismissState.currentValue == SwipeToDismissBoxValue.EndToStart) {
+        onDelete(listItem.id)
+    }
+
+    SwipeToDismissBox(
+        state = dismissState,
+        backgroundContent = {
+            Box(
+                modifier = Modifier
+                    .clip(RoundedCornerShape(12.dp))
+                    .fillMaxSize()
+                    .background(Color.Red)
+                    .padding(end = 16.dp),
+                contentAlignment = Alignment.CenterEnd
+            ) {
+                Icon(
+                    Icons.Default.Delete,
+                    contentDescription = "Удалить",
+                    tint = Color.White,
+                    modifier = Modifier.size(28.dp)
+                )
+            }
+        },
+        enableDismissFromStartToEnd = false
+    ) {
+        HabitCard(listItem = listItem, viewModel = viewModel)
+    }
+}
 
 @Composable
-fun HabitCard(modifier: Modifier = Modifier) {
+fun HabitCard(
+    modifier: Modifier = Modifier,
+    listItem: HabitListItem,
+    viewModel: HabitListViewModel
+) {
+    LaunchedEffect(listItem.id) {
+        viewModel.loadStatuses(listItem.id)
+    }
+
+    val statusesMap by viewModel.statusesMap.collectAsStateWithLifecycle()
+    val statuses = statusesMap[listItem.id] ?: List(7) { false }
+    val todayIndex = remember { LocalDate.now().dayOfWeek.value - 1 }
+
     Box(
         modifier = modifier
             .fillMaxWidth()
@@ -34,86 +97,51 @@ fun HabitCard(modifier: Modifier = Modifier) {
                 shape = RoundedCornerShape(12.dp)
             )
             .clip(RoundedCornerShape(12.dp))
+            .background(Color.White)
     ) {
         Column {
             Row(
-                modifier = modifier
+                modifier = Modifier
                     .fillMaxWidth()
                     .padding(top = 12.dp, bottom = 12.dp, start = 24.dp, end = 24.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text("3", fontWeight = FontWeight.Bold)
+                Text(
+                    text = listItem.count,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 16.sp
+                )
                 Icon(
                     imageVector = Icons.Default.Done,
                     contentDescription = "",
-                    Modifier.size(16.dp)
+                    modifier = Modifier.size(16.dp)
                 )
-                Text("Пресс качать", Modifier.padding(start = 8.dp), fontWeight = FontWeight.Bold)
+                Text(
+                    listItem.name,
+                    Modifier.padding(start = 8.dp),
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 16.sp
+                )
             }
-            Row(
-                modifier = modifier
+
+            LazyRow(
+                modifier = Modifier
                     .fillMaxWidth()
                     .padding(top = 16.dp, bottom = 12.dp, start = 12.dp, end = 12.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+                horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                CircularCheckIconButton(
-                    checked = true,
-                    onCheckedChange = {},
-                    modifier = modifier,
-                    today = false
-                )
-
-                CircularCheckIconButton(
-                    checked = false,
-                    onCheckedChange = {},
-                    modifier = modifier,
-                    today = false
-                )
-
-                CircularCheckIconButton(
-                    checked = true,
-                    onCheckedChange = {},
-                    modifier = modifier,
-                    today = true
-                )
-
-                CircularCheckIconButton(
-                    checked = false,
-                    onCheckedChange = {},
-                    modifier = modifier,
-                    today = false
-                )
-
-                CircularCheckIconButton(
-                    checked = false,
-                    onCheckedChange = {},
-                    modifier = modifier,
-                    today = false
-                )
-
-                CircularCheckIconButton(
-                    checked = false,
-                    onCheckedChange = {},
-                    modifier = modifier,
-                    today = false
-                )
-
-                CircularCheckIconButton(
-                    checked = false,
-                    onCheckedChange = {},
-                    modifier = modifier,
-                    today = false
-                )
+                itemsIndexed(statuses) { index, checked ->
+                    CustomCheckbox(
+                        state = checked,
+                        onClick = {
+                            if (index == todayIndex) {
+                                viewModel.toggleAndSave(index, listItem.id)
+                            }
+                        },
+                        today = index == todayIndex
+                    )
+                }
             }
         }
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun HabitCardPreview() {
-    HabitTrackerTheme() {
-        HabitCard(Modifier)
     }
 }

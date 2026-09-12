@@ -30,9 +30,7 @@ fun DayProgressItem(
         CircularProgressIndicator(
             progress = { progress },
             color = HabitColors().darkLilac,
-//            strokeWidth = ProgressIndicatorDefaults.CircularStrokeWidth,
             trackColor = HabitColors().lilac,
-//            strokeCap = ProgressIndicatorDefaults.CircularDeterminateStrokeCap,
         )
     }
 }

@@ -1,5 +1,7 @@
 package ru.netology.habittracker.feature.list
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -10,6 +12,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -20,36 +23,43 @@ import ru.netology.habittracker.ui.theme.HabitColors
 import ru.netology.habittracker.ui.theme.HabitTrackerTheme
 
 @Composable
-fun CircularCheckIconButton(
-    checked: Boolean,
-    onCheckedChange: () -> Unit,
+fun CustomCheckbox(
+    state: Boolean,
+    onClick: (Boolean) -> Unit,
     modifier: Modifier = Modifier,
     today: Boolean
 ) {
-    val backgroundColor = if (today) HabitColors().lilac else Color.LightGray
-    val iconTint = if (checked) {
-        if (today) {
-            Color.DarkGray
+    val animatedColor by animateColorAsState(
+        targetValue = if (today) HabitColors().lilac else Color.LightGray
+    )
+
+    val iconTint by animateColorAsState(
+        targetValue = if (state) {
+            if (today) {
+                Color.DarkGray
+            } else {
+                Color.Gray
+            }
         } else {
-            Color.Gray
+            Color.LightGray
         }
-    } else {
-        Color.LightGray
-    }
+    )
 
     Box(
         modifier = modifier
             .size(40.dp)
             .clip(CircleShape)
-            .background(backgroundColor)
-            .clickable(onClick = onCheckedChange),
+            .background(animatedColor, CircleShape)
+            .clickable { onClick(!state) },
         contentAlignment = Alignment.Center
     ) {
-        Icon(
-            imageVector = Icons.Default.Check,
-            contentDescription = "Check",
-            tint = iconTint
-        )
+        AnimatedVisibility(visible = state) {
+            Icon(
+                imageVector = Icons.Default.Check,
+                contentDescription = "Check",
+                tint = iconTint
+            )
+        }
     }
 }
 
@@ -58,21 +68,21 @@ fun CircularCheckIconButton(
 fun CircularCheckIconButtonPreview() {
     HabitTrackerTheme() {
         Row() {
-            CircularCheckIconButton(
-                checked = false,
-                onCheckedChange = {},
+            CustomCheckbox(
+                state = false,
+                onClick = {},
                 today = false
             )
 
-            CircularCheckIconButton(
-                checked = true,
-                onCheckedChange = {},
+            CustomCheckbox(
+                state = true,
+                onClick = {},
                 today = false
             )
 
-            CircularCheckIconButton(
-                checked = true,
-                onCheckedChange = {},
+            CustomCheckbox(
+                state = true,
+                onClick = {},
                 today = true
             )
         }

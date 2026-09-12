@@ -6,13 +6,14 @@ import androidx.room.PrimaryKey
 
 @Entity("habits")
 data class HabitEntity(
-    @ColumnInfo("id")
+
     @PrimaryKey(autoGenerate = true)
+    @ColumnInfo("id")
     val id: Long = 0,
 
     @ColumnInfo("name")
     val name: String,
 
-    @ColumnInfo("date")
-    val date: Long
+    @ColumnInfo("statusList")
+    val statusList: List<Boolean>
 )
