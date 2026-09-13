@@ -33,12 +33,11 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 
 @Composable
 fun NewHabitScreenRoute(
-    modifier: Modifier,
     onBack: () -> Unit,
 ) {
     val viewModel = viewModel<NewHabitViewModel>()
     val isError by viewModel.errorState.collectAsStateWithLifecycle()
-    NewHabitScreen(modifier, onBack, viewModel, isError)
+    NewHabitScreen(onBack = onBack, viewModel = viewModel, isError = isError)
 }
 
 @Composable
@@ -57,7 +56,7 @@ fun NewHabitScreen(
     Column(
         modifier
             .fillMaxSize()
-            .padding(start = 16.dp, end = 16.dp)
+            .padding(start = 16.dp, end = 16.dp, top = 32.dp)
     ) {
         val state = remember { mutableStateOf("") }
 

@@ -26,7 +26,12 @@ fun HabitListScreenRoute(modifier: Modifier = Modifier) {
     val state by viewModel.habitListState.collectAsState()
     val weekProgress by viewModel.weekProgress.collectAsStateWithLifecycle()
 
-    HabitListScreen(modifier, state.items.toMutableStateList(), viewModel, weekProgress)
+    HabitListScreen(
+        modifier = modifier,
+        list = state.items.toMutableStateList(),
+        viewModel = viewModel,
+        weekProgress = weekProgress
+    )
 }
 
 @Composable
